@@ -1,0 +1,34 @@
+*/ Do-file for problem set 2, problem 1 */
+
+clear
+
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+* Load the data set;
+use "F:\AdEconometrics\Homework2\bwght.DTA", clear;
+
+* Open output file;
+
+log using F:\AdEconometrics\Homework2\Ex1.log, replace;
+
+* Estimate the reduced form for packs;
+
+reg packs male parity white cigtax motheduc fatheduc lfaminc;
+
+outreg male parity white cigtax motheduc fatheduc lfmainc 
+using F:\AdEconometrics\Homework2\table1, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct
+coefastr ctitle(I) replace;
+
+* Estimate an OLS regression of lbwght on male parity white packs;
+
+reg lbwght male parity white pack;
+
+* Estimate a 2SLS regression of lbwght on male parity white packs;
+*using motheduc fatheduc lfaminc as instrument for packs;
+
+reg lbwght male parity white packs (male parity white fatheduc motheduc lfaminc);
+
+log close;
+
+* end;
