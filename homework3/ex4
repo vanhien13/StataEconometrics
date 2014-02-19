@@ -1,0 +1,57 @@
+/* Exercise 4, Problem 3, Econ 8760 */
+clear
+
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+set memory 20m;
+set matsize 400;
+
+* Open output file;
+
+log using E:\AdEconometrics\Homework4\Ex3ab.log, replace;
+
+infile NR YEAR AG BLACK BUS CON ENT EXPER FIN HISP HLTH HOURS MAN MAR MIN NC NE 
+OCC1 OCC2 OCC3 OCC4 OCC5 OCC6 OCC7 OCC8 OCC9 PER PRO PUB RUR S SCHOOL TRA 
+TRAD UNION WAGE using E:\AdEconometrics\Homework4\VV-DATA.dat;
+
+gen EXPER2 = EXPER^2;
+gen LEXPER = log(1+EXPER);
+
+* Summarize the data;
+
+sum AG BLACK BUS CON ENT EXPER EXPER2 LEXPER FIN HISP HLTH HOURS MAN MAR MIN NC NE 
+OCC1 OCC2 OCC3 OCC4 OCC5 OCC6 OCC7 OCC8 OCC9 PER PRO PUB RUR S SCHOOL TRA 
+TRAD UNION WAGE;
+
+gen id = NR; 
+
+tsset id YEAR;
+gen UNION_1 = L.UNION;
+
+xtsum AG BLACK BUS CON ENT EXPER EXPER2 LEXPER FIN HISP HLTH HOURS MAN MAR MIN NC NE 
+OCC1 OCC2 OCC3 OCC4 OCC5 OCC6 OCC7 OCC8 OCC9 PER PRO PUB RUR S SCHOOL TRA 
+TRAD UNION WAGE;
+
+tabulate YEAR, gen(y);
+rename y1 y80;
+rename y2 y81;
+rename y3 y82;
+rename y4 y83;
+rename y5 y84;
+rename y6 y85;
+rename y7 y86;
+rename y8 y87;
+
+* Pooled Probit;
+probit UNION AG BLACK BUS CON ENT LEXPER FIN HISP HLTH MAN MAR MIN NC NE 
+PER PRO RUR S SCHOOL TRA TRAD OCC1-OCC8 y81-y87, nolog;
+
+*Pannel Probit; 
+xtprobit UNION AG BLACK BUS CON ENT LEXPER FIN HISP HLTH MAN MAR MIN NC NE 
+PER PRO RUR S SCHOOL TRA TRAD y81-y87, re nolog;
+
+xtprobit UNION AG BLACK BUS CON ENT LEXPER FIN HISP HLTH MAN MAR MIN NC NE 
+PER PRO RUR S SCHOOL TRA TRAD OCC1-OCC8 y81-y87, re nolog;
+
+log close; 
