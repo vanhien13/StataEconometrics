@@ -1,0 +1,91 @@
+/* Taxation Final Paper */
+
+clear
+
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+set memory 5m;
+set matsize 400;
+
+use "F:\Taxation\Research\OECD_1990-2001_annual1", clear;
+
+* Open output file;
+log using F:\Taxation\Research\finalpaper.log, replace;
+
+* Create year dummy variables;
+
+forvalues i = 1990/1999 {;
+	gen y`i'=0;
+	replace y`i'=1 if year == `i';
+};
+
+* Declare variables; 
+
+tsset country year;
+
+global transfers "pens health welf almp unem";
+global taxes "inctax corptax socsecct proptax txgenral excise";
+global controls "lgdpin inv1 inv10 school10 univ10 turnover milit pop popgrow3100 open
+unemmale unemfem polit pubshare100 tmit";
+global timedum "y1990-y1999";
+
+*Lump-together Panel OLS;
+*Fixed effect;
+xtreg gdpcap3perave trans totaltax $controls $timedum, fe;
+outreg trans totaltax $controls $timedum using 
+F:\Taxation\Research\table1, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(I) replace;
+
+*Random effect;
+xtreg gdpcap3perave trans totaltax $controls $timedum, re;
+outreg trans totaltax $controls $timedum using
+F:\Taxation\Research\table1, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(II) append;
+
+
+*Full Panel OLS;
+*Fixed effect;
+xtreg gdpcap3perave $transfers $taxes $controls $timedum, fe;
+outreg $transfers $taxes $controls $timedum using 
+F:\Taxation\Research\table2, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(I) replace;
+
+*Random effect;
+xtreg gdpcap3perave $transfers $taxes $controls $timedum, re;
+outreg $transfers $taxes $controls $timedum using 
+F:\Taxation\Research\table2, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(II) append;
+
+*Using intuition possible endogenity variables are turnover, pop, popgrow3100 open unemmale unemfem;
+
+*Panel IV for lump together model;
+
+*Fixed effect;
+xtivreg gdpcap3perave trans  totaltax lgdpin inv1 inv10 school10 univ10 milit
+polit pubshare100 tmit (turnover pop popgrow3100 open unemmale unemfem = 
+L.turnover L.pop L.popgrow3100 L.open L.unemmale L.unemfem) $timedum, fe;
+outreg trans totaltax $controls $timedum using
+F:\Taxation\Research\table1, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(III) append;
+
+*Random effect;
+xtivreg gdpcap3perave trans totaltax lgdpin inv1 inv10 school10 univ10 milit
+polit pubshare100 tmit (turnover pop popgrow3100 open unemmale unemfem = 
+L.turnover L.pop L.popgrow3100 L.open L.unemmale L.unemfem) $timedum, re;
+outreg trans totaltax $controls $timedum using
+F:\Taxation\Research\table1, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(IV) append;
+
+
+*Panel IV for full model;
+
+*Fixed effect;
+xtivreg gdpcap3perave $transfers $taxes lgdpin inv1 inv10 school10 univ10 milit
+polit pubshare100 tmit (turnover pop popgrow3100 open unemmale unemfem = 
+L.turnover L.pop L.popgrow3100 L.open L.unemmale L.unemfem) $timedum, fe;
+outreg $transfers $taxes $controls $timedum using
+F:\Taxation\Research\table2, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(III) append;
+
+*Random effect;
+xtivreg gdpcap3perave $transfers $taxes lgdpin inv1 inv10 school10 univ10 milit
+polit pubshare100 tmit (turnover pop popgrow3100 open unemmale unemfem = 
+L.turnover L.pop L.popgrow3100 L.open L.unemmale L.unemfem) $timedum, re;
+outreg $transfers $taxes $controls $timedum using
+F:\Taxation\Research\table2, se nolabel bdec(3) rdec(3) sigsymb(*,**,+) 10pct coefastr ctitle(IV) append;
+
+log close;
