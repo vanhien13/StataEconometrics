@@ -1,0 +1,98 @@
+* Exercise 4, Problem 3d Part2 Chamberlin Panel Probit with occupational dummies , Econ 8760 */
+clear
+
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+set memory 20m;
+set matsize 400;
+
+* Open output file;
+
+log using E:\AdEconometrics\Homework4\Ex3d1.log, replace;
+
+infile NR YEAR AG BLACK BUS CON ENT EXPER FIN HISP HLTH HOURS MAN MAR MIN NC NE 
+OCC1 OCC2 OCC3 OCC4 OCC5 OCC6 OCC7 OCC8 OCC9 PER PRO PUB RUR S SCHOOL TRA 
+TRAD UNION WAGE using E:\AdEconometrics\Homework4\VV-DATA.dat;
+
+gen EXPER2 = EXPER^2;
+gen LEXPER = log(1+EXPER);
+
+gen id = NR; 
+
+tsset id YEAR;
+gen UNION_1 = L.UNION;
+
+
+tabulate YEAR, gen(y);
+rename y1 y80;
+rename y2 y81;
+rename y3 y82;
+rename y4 y83;
+rename y5 y84;
+rename y6 y85;
+rename y7 y86;
+rename y8 y87;
+
+
+gen union1980 = .;
+replace union1980 = UNION if YEAR==1980;
+replace union1980 = union1980[_n-1] if YEAR==1981;
+replace union1980 = union1980[_n-2] if YEAR==1982;
+replace union1980 = union1980[_n-3] if YEAR==1983;
+replace union1980 = union1980[_n-4] if YEAR==1984;
+replace union1980 = union1980[_n-5] if YEAR==1985;
+replace union1980 = union1980[_n-6] if YEAR==1986;
+replace union1980 = union1980[_n-7] if YEAR==1987; 
+
+
+* Chamberlain's random effects probit model;
+    
+      bysort id: egen AGm = mean(AG);
+      bysort id: egen BUSm = mean(BUS);
+      bysort id: egen CONm = mean(CON);
+      bysort id: egen ENTm = mean(ENT);
+      bysort id: egen LEXPERm = mean(LEXPER);
+      bysort id: egen FINm = mean(FIN);
+      bysort id: egen HLTHm = mean(HLTH);
+      bysort id: egen HOURm = mean(HOUR);
+      bysort id: egen MANm = mean(MAN);
+      bysort id: egen MARm = mean(MAR);
+      bysort id: egen MINm = mean(MIN);
+      bysort id: egen NCm = mean(NC);
+      bysort id: egen NEm = mean(NE);
+      bysort id: egen OCC1m = mean(OCC1);
+      bysort id: egen OCC2m = mean(OCC2);
+      bysort id: egen OCC3m = mean(OCC3);
+      bysort id: egen OCC4m = mean(OCC4);
+      bysort id: egen OCC5m = mean(OCC5);
+      bysort id: egen OCC6m = mean(OCC6);
+      bysort id: egen OCC7m = mean(OCC7);
+      bysort id: egen OCC8m = mean(OCC8);
+      bysort id: egen OCC9m = mean(OCC9);
+      bysort id: egen PERm = mean(PER);
+      bysort id: egen PROm = mean(PRO);
+      bysort id: egen PUBm = mean(PUB);
+      bysort id: egen RURm = mean(RUR);
+      bysort id: egen Sm = mean(S);
+      bysort id: egen TRAm = mean(TRA);
+      bysort id: egen TRADm = mean(TRAD);
+	bysort id: egen WAGEm = mean(WAGE);
+      bysort id: egen UNION_1m = mean(UNION_1);
+
+	global x1 "AG BLACK BUS CON ENT LEXPER FIN HISP HLTH MAN MAR MIN NC NE 
+	PER PRO RUR S SCHOOL TRA TRAD";
+	
+	global x2 "AG BLACK BUS CON ENT LEXPER FIN HISP HLTH MAN MAR MIN NC NE 
+	PER PRO RUR S SCHOOL TRA TRAD OCC1-OCC8";
+
+	global x1m "AGm BUSm CONm ENTm LEXPERm FINm HLTHm MANm MARm MINm NCm 
+	NEm PERm PROm RURm Sm TRAm TRADm";
+	
+	global x2m "AGm BUSm CONm ENTm LEXPERm FINm HLTHm MANm MARm MINm NCm 
+	NEm OCC1m OCC2m OCC3m OCC4m OCC5m OCC6m OCC7m OCC8m PERm PROm RURm Sm TRAm TRADm";
+
+	     
+	xtprobit UNION UNION_1 union1980 UNION_1m $x2 $x2m y81-y87 if YEAR>1981, re nolog;
+
+	log close;
