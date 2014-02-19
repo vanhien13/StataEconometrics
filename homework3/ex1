@@ -1,0 +1,54 @@
+/* Homework 3, number 1, Econ 8760*/
+
+clear
+
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+set memory 5m;
+set matsize 400;
+
+* Load the data set;
+use "F:\AdEconometrics\Homework3\wages.dta";
+
+* Open output file;
+log using F:\AdEconometrics\Homework3\Ex1.log, replace;
+
+* Generate exp_sq;
+gen exp_sq = exp^2; 
+
+* Create unit and time indentifiers;
+egen id = fill(1 1 1 1 1 1 1 2 2 2 2 2 2 2);
+egen year = fill(1976 1977 to 1982 1976 1977 to 1982);
+
+tabulate year, gen(yeard);
+
+* Declare data to be panel;
+tsset id year;
+
+* The descriptive statistics for all including the within and between standard deviations;
+xtsum _all;
+
+* RE GLS estimator;
+xtreg lwage wks south smsa ms exp exp_sq occ ind union fem blk ed yeard1-yeard7, re;
+est store GLS;
+  
+* Within (fixed effects) Estimator;
+xtreg lwage wks south smsa ms exp exp_sq occ ind union fem blk ed yeard1-yeard7, fe;
+est store Within;
+
+* Hausman Taylor estimator;
+xthtaylor lwage exp wks occ ind south smsa ms fem union ed blk exp_sq yeard1-yeard7, endog(exp occ ind
+union ed exp_sq);
+est store HT;
+
+* Amemiya and Macurdy estimator;
+xthtaylor lwage exp wks occ ind south smsa ms fem union ed blk exp_sq yeard1-yeard7, endog(exp occ ind
+union ed exp_sq) amacurdy;
+est store AM;
+
+hausman Within GLS;
+hausman HT Within;
+hausman AM Within;
+
+log close;
