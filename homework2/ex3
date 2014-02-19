@@ -1,0 +1,11 @@
+*HW number 3
+
+* Create 100 observation on y, and then obtain its summary statistics.
+log using F:\AdEconometrics\Homework2\Ex3.log, replace
+clear
+set obs 100
+egen x=fill(1 2)
+gen y=(0.01*exp(1+0.01*x)/(1+exp(1+0.01*x))^2)
+sum y
+list y
+log close
