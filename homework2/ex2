@@ -1,0 +1,41 @@
+*/ Do-file for problem set 2, problem 2 */
+
+clear
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+log using F:\AdEconometrics\Homework2\ex2.log, replace;
+
+* Read in data;
+
+infile V SO SKI I FC3 C3 C1 C4
+using F:\AdEconometrics\Homework2\RECSORT.PRN;
+
+*Check the data and obtain the descriptive statistics
+for all variables;
+
+des;
+
+summarize _all;
+
+* Run an OlS regression of V on the constant term
+and other 7 variables;
+
+reg V SO SKI I FC3 C3 C1 C4;
+
+*Obtain the marginal effects and elasticities;
+mfx compute, varlist(SO SKI I FC3 C3 C1 C4) dydx at(mean);
+mfx compute, varlist(SO SKI I FC3 C3 C1 C4) dyex at(mean);
+mfx compute, varlist(SO SKI I FC3 C3 C1 C4) eydx at(mean);
+mfx compute, varlist(SO SKI I FC3 C3 C1 C4) eyex at(mean);
+
+* Estimate V = exp(B1+B2S0+B3SKI+B4I+B5FC3+B6C3+B7C1+B8C4)+epsilon;
+
+nl (V = exp({B1}+{B2}*SO+{B3}*SKI+{B4}*I+{B5}*FC3+{B6}*C3+{B7}*C1+{B8}*C4)),
+variables(SO SKI I FC3 C3 C1 C4);
+
+*Obtain the marginal effects and elasticities;
+mfx compute, varlist(SO SKI I FC3 C3 C1 C4) dydx at(mean);
+mfx compute, varlist(SO SKI I FC3 C3 C1 C4) eyex at(mean);
+
+log close;
