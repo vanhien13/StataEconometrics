@@ -1,0 +1,107 @@
+/* Homework 3, number 2, Econ 8760*/
+
+clear
+
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+set memory 5m;
+set matsize 400;
+
+* Load the data set;
+use "F:\AdEconometrics\Homework3\crime.dta";
+
+* Open output file;
+log using F:\AdEconometrics\Homework3\Ex2.log, replace;
+
+* Obtain the descriptive statistics for all variables;
+summarize _all;
+
+* Generate new variables;
+gen lcrmrte = log(crmrte);
+gen lprbarr = log(prbarr);
+gen lprbconv = log(prbconv);
+gen lprbpris = log(prbpris);
+gen lavgsen = log(avgsen);
+gen lpolpc = log(polpc);
+gen ldensity = log(density);
+gen ltaxpc = log(taxpc);
+gen lpctmin80 = log(pctmin80); 
+gen lwcon = log(wcon);
+gen lwtuc = log(wtuc);
+gen lwtrd = log(wtrd);
+gen lwfir = log(wfir);
+gen lwser = log(wser);
+gen lwmfg = log(wmfg);
+gen lwfed = log(wfed);
+gen lwsta = log(wsta); 
+gen lwloc = log(wloc);
+gen lmix = log(mix);
+gen lpctymle = log(pctymle);
+
+* Generate year-dummies;
+tabulate year, gen(yeard);  
+
+* Declare the data to be panel;
+tsset county year;
+
+* Between Estimator;
+xtreg lcrmrte lprbarr lprbconv lprbpris lavgsen lpolpc    
+ldensity west central urban lpctmin80 lwcon lwtuc     
+lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle, be;
+
+* Within Estimator;
+xtreg lcrmrte lprbarr lprbconv lprbpris lavgsen lpolpc    
+ldensity lpctmin80 lwcon lwtuc lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle
+yeard1 yeard2 yeard3 yeard4 yeard5 yeard6 yeard7, fe; 
+est store within;
+
+* First difference estimator;
+reg D.lcrmrte D.lprbarr D.lprbconv D.lprbpris D.lavgsen D.lpolpc    
+D.ldensity D.lpctmin80 D.lwcon D.lwtuc     
+D.lwtrd D.lwfir D.lwser D.lwmfg D.lwfed D.lwsta D.lwloc D.lpctymle;
+
+* RE GLS estimator;
+xtreg lcrmrte lprbarr lprbconv lprbpris lavgsen lpolpc    
+ldensity west central urban lpctmin80 lwcon lwtuc lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle
+yeard1 yeard2 yeard3 yeard4 yeard5 yeard6 yeard7, re;
+
+* Hausman Test for comparing the FE and RE;
+hausman within .; 
+
+/* Results */
+
+
+
+* Between 2SLS estimator for lcrmrte (BE2SLS);
+xtivreg lcrmrte lprbconv lprbpris lavgsen    
+ldensity west central urban lpctmin80 lwcon lwtuc     
+lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle (lprbarr lpolpc = lmix ltaxpc), be first;
+
+
+* Fixed Effects (or within) 2SLS estimator for lcrmrte (FE2SLS);
+xtivreg lcrmrte lprbconv lprbpris lavgsen     
+ldensity lpctmin80 lwcon lwtuc     
+lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle 
+yeard1-yeard7 (lprbarr lpolpc = lmix ltaxpc), fe first;
+
+
+* First-Differenced 2SLS estimator for lcrmrte (FD2SLS);
+xtivreg lcrmrte lprbconv lprbpris lavgsen    
+ldensity lpctmin80 lwcon lwtuc     
+lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle (lprbarr lpolpc = lmix ltaxpc), fd first;
+
+
+* Random Effects 2SLS estimator for lcrmrte (G2SLS);
+xtivreg lcrmrte lprbconv lprbpris lavgsen    
+ldensity west central urban lpctmin80 lwcon lwtuc     
+lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle
+yeard1 yeard2 yeard3 yeard4 yeard5 yeard6 yeard7 (lprbarr lpolpc = lmix ltaxpc), re first;
+
+* Error component 2SLS estimator for lcrmrte (EC2SLS);
+xtivreg lcrmrte lprbconv lprbpris lavgsen    
+ldensity west central urban lpctmin80 lwcon lwtuc     
+lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle
+yeard1 yeard2 yeard3 yeard4 yeard5 yeard6 yeard7 (lprbarr lpolpc = lmix ltaxpc), re ec2sls first;
+
+log close;
