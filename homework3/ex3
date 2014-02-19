@@ -1,0 +1,42 @@
+/*Problem Set #3, Number #3,*/
+
+clear
+
+* Use ";" as end-of-line delimiter
+# delimit ;
+
+set memory 5m;
+set matsize 400;
+
+* Open output file;
+log using F:\AdEconometrics\Homework3\Ex3.log, replace;
+
+infile year fcode employ sales avgsal scrap rework tothrs   
+union grant d89 d88 totrain hrsemp lscrap lemploy  
+lsales lrework lhrsemp lscrap_1 grant_1 clscrap cgrant clemploy 
+clsales lavgsal clavgsal cgrant_1 chrsemp clhrsemp 
+using "F:\AdEconometrics\Homework3\jtrain1.raw";
+
+
+tabulate year, gen(yeard);
+tsset fcode year;
+
+* Testing the rank condition for identification;
+
+sum D.hrsemp D.grant if year<= 1988;
+
+correlate D.hrsemp D.grant if year<= 1988;
+
+* First difference IV estimator;
+xtivreg lscrap (hrsemp = grant) if year<= 1988, fd first;
+
+*First difference OLS estimator;
+reg D.lscrap D.hrsemp if year<=1988;
+
+* Estimate using all the data from the three years;
+
+* First difference IV estimator;
+xtivreg lscrap (hrsemp = grant), fd first;
+
+
+log close;
